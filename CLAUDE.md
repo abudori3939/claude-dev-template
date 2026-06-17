@@ -2,8 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-> このリポジトリは **ROS 2 / C++ プロジェクト用 開発ルールテンプレート**（claude-dev-template）から作成されています。
-> 開発フロー・品質ルールは下記のとおり。**プロジェクト固有の情報は「プロジェクト概要」と `agent_docs/project/plan.md` を埋めてください。**
+> このリポジトリは **Claude Code 開発ルールテンプレート**（claude-dev-template）から作成されています。
+> 開発フロー・品質ルールはスタック非依存。**プロジェクト固有の情報は「プロジェクト概要」と `agent_docs/project/plan.md` を埋め、使用スタックは `agent_docs/stacks/` のガイドに従ってください。**
 
 ## セッション開始時の判定（最初に必ず行う）
 
@@ -19,17 +19,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## ドキュメント構成
 
 - **`agent_docs/`** … 開発エージェント向けの文書（このテンプレートの中身）。
-  - `agent_docs/common/` … ROS 2 実装に共通の作法（再利用・基本いじらない）: `coding_standards.md` / `remote_setup.md` / `spec_format.md` / `adr_guide.md`
+  - `agent_docs/common/` … スタック非依存の作法（再利用・基本いじらない）: `coding_standards.md` / `remote_setup.md` / `spec_format.md` / `adr_guide.md`
+  - `agent_docs/stacks/` … スタック固有の作法（ビルド・テスト・lint・命名）。使用スタックの該当ガイドに従う（例: ROS 2 / C++ は `ros2_cpp.md`）。
   - `agent_docs/project/` … このプロジェクト固有のドメイン設計（クローン後に育てる）: `plan.md` / `spec.md` / `progress.md` / `adr/`
   - `agent_docs/getting_started.md` … クローン後にまず読む手順書（フェーズ0）
 - **`docs/`** … （任意）エンドユーザー向けのプロジェクト説明ドキュメント。配布時に作成する。**agent_docs とは別物。**
 
 ## プロジェクト概要（新規プロジェクトで記入する）
 
-- 目的: <このパッケージ/ノードが何をするか。1〜3行>
-- パッケージ名 / リポジトリ名: <...>
-- 主要トピック（入力 / 出力）: <...>
-- アーキテクチャ概要: <処理段・主要クラスなど。詳細は `agent_docs/project/spec.md` と `agent_docs/project/plan.md`>
+- 目的: <このプロジェクト／コンポーネントが何をするか。1〜3行>
+- 名前: <パッケージ名 / リポジトリ名>
+- 使用スタック: <例: ROS 2 / C++、Python など。該当する `agent_docs/stacks/<stack>.md` に従う（無ければ作成）>
+- 主要インターフェース: <入力 / 出力（トピック・API・データ等）>
+- アーキテクチャ概要: <主要モジュール・データフローなど。詳細は `agent_docs/project/spec.md` と `agent_docs/project/plan.md`>
 - 実装優先順位: <Phase 分け>
 
 > 記入が済んだら、この注記行は削除してよい。
@@ -61,7 +63,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### TDD（テスト駆動開発：レッド→グリーン→リファクタリング）
 1. **実装着手前に必ず plan モードで実装計画を立てる。**
 2. **レッド**: 先に失敗するテストを書く。テストが「失敗する」ことをユーザーに確認してもらう。
-   - **コンパイルエラーはレッドとして認めない。** テストはビルドが通ったうえで「アサーション失敗」していること。
+   - **コンパイル／ビルドエラーはレッドとして認めない。** テストはビルドが通ったうえで「アサーション失敗」していること。
 3. テストコードをユーザーに提示し、**承認を得る**。
 4. **グリーン**: 承認後、テストが通る最小限の実装を行う。
 5. **リファクタリング**: テストが緑のまま、重複除去・命名改善・責務整理を行う。掃除も同じ PR に含め、「動くが汚い」コードを次サイクルへ持ち越さない。
@@ -78,19 +80,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 品質維持・技術的負債対策
 
-高品質を維持し負債を溜めないため、以下を運用する。詳細なコーディング規約は **`agent_docs/common/coding_standards.md`** を参照（CLAUDE.md は簡潔に保ち、規約本体はそちらに集約する）。
+高品質を維持し負債を溜めないため、以下を運用する。スタック非依存の規約は **`agent_docs/common/coding_standards.md`**、具体的なツール・コマンドは **`agent_docs/stacks/<該当>.md`** を参照（CLAUDE.md は簡潔に保つ）。
 
 ### 完了の定義（Definition of Done）
 PR をレビューに出す前に、以下をすべて満たすこと:
-- [ ] 全テストが緑（`colcon test` でアサーション通過）
+- [ ] 全テストが緑（プロジェクトのテストコマンドでアサーション通過）
 - [ ] lint / format / 静的解析の警告ゼロ（下記の自動ゲート）
 - [ ] テストカバレッジが PR 前より低下していない
 - [ ] `agent_docs/project/progress.md` を更新済み／計画ドキュメントと実装が一致
-- [ ] public な関数・ROS パラメータに説明コメント、`TODO` には理由を併記
+- [ ] public な関数・設定パラメータに説明コメント、`TODO` には理由を併記
 - [ ] 設計が計画から逸脱した場合は ADR（`agent_docs/project/adr/`）に記録済み
 
 ### 自動品質ゲート
-- ROS 2 標準の `ament_lint_auto` に加え、C++ 向けに **clang-format / clang-tidy / cppcheck** を導入し、`colcon test` で実行できるようにする。
+- format / lint / 静的解析を導入し、テストと同じコマンドで実行できるようにする。具体的なツール・コマンドはスタックガイド（`agent_docs/stacks/<該当>.md`）に従う（例: ROS 2 / C++ なら `ament_lint_auto` ＋ clang-format / clang-tidy / cppcheck）。
 - 機械的な指摘は自動ゲートに任せ、コードレビューエージェント・ユーザーは設計判断に集中する。
 
 ### CI（GitHub Actions）
@@ -100,20 +102,7 @@ PR をレビューに出す前に、以下をすべて満たすこと:
 ### 設計判断の記録（ADR）
 - 計画ドキュメントから逸脱する判断は `agent_docs/project/adr/` に短く残し、計画ドキュメントを真実の源（source of truth）に保つ。書き方は `agent_docs/common/adr_guide.md`。
 
-## Workspace & build（プロジェクトで記入）
+## ビルド・テスト
 
-ROS 2 / colcon ワークスペース前提のコマンド雛形（`<package>` を置換）:
-
-```bash
-cd <colcon_ws のルート>
-
-# ビルド（このパッケージと依存のみ）
-colcon build --packages-select <package> --symlink-install
-
-# ビルド後に毎回 source（新しいシェル）
-source install/setup.bash
-
-# テスト → 結果確認
-colcon test --packages-select <package>
-colcon test-result --verbose
-```
+ビルド／テスト／lint の具体的な手順は、使用スタックのガイド（`agent_docs/stacks/<該当>.md`）に従う。
+例: ROS 2 / C++ は `agent_docs/stacks/ros2_cpp.md`（colcon / gtest / ament_lint）。
