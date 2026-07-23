@@ -42,7 +42,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **`agent_docs/`** … 開発エージェント向けの文書（このテンプレートの中身）。
   - `agent_docs/common/` … スタック非依存の作法（再利用・基本いじらない）: `coding_standards.md` / `remote_setup.md` / `spec_format.md` / `adr_guide.md` / `pr_review.md`
-  - `agent_docs/stacks/` … スタック固有の作法（ビルド・テスト・lint・命名）。使用スタックの該当ガイドに従う（例: ROS 2 / C++ は `ros2_cpp.md`）。
+  - `agent_docs/stacks/` … スタック固有の作法（ビルド・テスト・lint・命名）。使用スタックの該当ガイドに従う（例: ROS 2 / C++ は `ros2_cpp.md`、PPTX 資料は `pptx_deliverable.md`）。
   - `agent_docs/project/` … このプロジェクト固有のドメイン設計（クローン後に育てる）: `plan.md` / `spec.md` / `progress.md` / `adr/`
   - `agent_docs/getting_started.md` … クローン後にまず読む手順書（フェーズ0）
 - **`docs/`** … （任意）エンドユーザー向けのプロジェクト説明ドキュメント。配布時に作成する。**agent_docs とは別物。**
@@ -89,6 +89,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 3. テストコードをユーザーに提示し、**承認を得る**。
 4. **グリーン**: 承認後、テストが通る最小限の実装を行う。
 5. **リファクタリング**: テストが緑のまま、重複除去・命名改善・責務整理を行う。掃除も同じ PR に含め、「動くが汚い」コードを次サイクルへ持ち越さない。
+
+> **文書成果物スタック（PPTX 資料など）の場合**: 成果物がプログラムでないプロジェクトでは、このフローを**レッド＝骨子（.md）のユーザー承認 → グリーン＝骨子どおりの初稿生成 → リファクタ＝体裁・表記の仕上げ**に読み替え、粒度は**資料全体で1サイクル（1PR）**とする。読み替え表・検証ゲートは `agent_docs/stacks/pptx_deliverable.md` に従う。
 
 ### ブランチ・PR・レビュー
 ここではゲート（必ず守る分岐点）だけを示す。レビューの進め方・**指摘対応の報告の仕方**・GitHub 上のやり取りなど運用の詳細は **`agent_docs/common/pr_review.md`** に集約。
