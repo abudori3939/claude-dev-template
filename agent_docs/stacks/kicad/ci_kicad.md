@@ -5,7 +5,7 @@
 
 ## 前提
 
-- 公式 Docker イメージ `kicad/kicad:<version>` を使う（プロジェクトで固定したバージョンと一致させること。例: `kicad/kicad:9.0`）。
+- 公式 Docker イメージ `kicad/kicad:<version>` を使う（**プロジェクトで固定したバージョン＝ローカルと必ず一致させる**。既定は最新メジャー。例: `kicad/kicad:10.0`）。
 - イメージは非 root ユーザーで動くため、checkout や pip の権限問題が出る場合は `options: --user root` を付ける。
 - `<board>` はプロジェクトの基板名に置換する。
 
@@ -23,7 +23,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     container:
-      image: kicad/kicad:9.0
+      image: kicad/kicad:10.0
       options: --user root
     steps:
       - uses: actions/checkout@v4
@@ -77,7 +77,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     container:
-      image: kicad/kicad:9.0
+      image: kicad/kicad:10.0
       options: --user root
     steps:
       - uses: actions/checkout@v4

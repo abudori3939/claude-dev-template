@@ -5,13 +5,13 @@
 
 ## 0. 環境準備（最初の1回）
 
-1. KiCad（プロジェクトで固定したメジャーバージョン。推奨 9.x）がインストールされていることを確認する:
+1. KiCad（プロジェクトで固定したメジャーバージョン。既定＝最新メジャー、執筆時点では 10.x。ユーザー指定があればそれに従う）がインストールされていることを確認する:
 
    ```bash
    kicad-cli version
    ```
 
-   Windows では PATH に無いことが多い。フルパス（例: `C:\Program Files\KiCad\9.0\bin\kicad-cli.exe`）を
+   Windows では PATH に無いことが多い。フルパス（例: `C:\Program Files\KiCad\10.0\bin\kicad-cli.exe`）を
    **CLAUDE.md「プロジェクト概要」に記録し、以降フルパスで呼ぶ**（Python 実行パスも同様）。
 
 2. Python 依存を入れる:
