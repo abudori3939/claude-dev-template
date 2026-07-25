@@ -80,7 +80,48 @@ CLAUDE.md のフローは変えない。各工程を次のように対応させ�
     └── parts.md            ← 部品台帳（下記）。PPTX スタックの data_sources.md に相当
 ```
 
-`.gitignore` に追加: `*-backups/`, `fp-info-cache`, `*.lck`, `*.kicad_prl`, `_autosave-*`, `outputs/`
+### クロスプラットフォーム運用（Windows / Ubuntu 混在前提）
+
+作業者の OS は混在する前提で運用する。差分・参照が OS 差で壊れないよう、**リポジトリ初期構築時にエージェントが次の2ファイルを必ず整備する**（レビュー時の確認項目は [review_checklist.md](kicad/review_checklist.md) §0）。
+
+1. **`.gitattributes`** — 改行コードだけの差分（CRLF ノイズ）を根絶する。KiCad ファイルはテキスト（S式 / JSON）なので、全 OS で LF に固定する。**このテンプレート由来のリポジトリにはルートに同梱済み**（無ければ作成する）:
+
+   ```gitattributes
+   # KiCad ファイルは全 OS で LF に固定（改行コードのみの差分を出さない）
+   *.kicad_*     text eol=lf
+   sym-lib-table text eol=lf
+   fp-lib-table  text eol=lf
+   *.net         text eol=lf
+   # スクリプト・ドキュメント・CI 設定も LF
+   *.py  text eol=lf
+   *.md  text eol=lf
+   *.yml text eol=lf
+   ```
+
+2. **`.gitignore`** — KiCad が作業中に生成する一時・バックアップファイルは一切コミットしない（本質的な変更だけを git 管理する）:
+
+   ```gitignore
+   # KiCad の自動バックアップ・一時ファイル
+   *-backups/
+   *.kicad_prl
+   *.lck
+   ~*.lck
+   _autosave-*
+   fp-info-cache
+   *.bak
+   *.bck
+   *-bak
+   *.kicad_sch-bak
+   *.kicad_pcb-bak
+   *.tmp
+   *.000
+   # 生成物（CI が再現生成する）
+   outputs/
+   # Python
+   __pycache__/
+   ```
+
+3. **パスは常に相対・大文字小文字も正確に。** 絶対パス（ドライブレター `C:\...` やホームディレクトリ）は OS が変わると解決できない。ライブラリ参照の規則は下記「ライブラリ管理の絶対ルール」。ファイル名の大文字小文字は Ubuntu では区別されるため、参照と実ファイルで正確に一致させる。
 
 ### parts.md（部品台帳）のフォーマット
 
@@ -100,7 +141,7 @@ CLAUDE.md のフローは変えない。各工程を次のように対応させ�
 
 ## ライブラリ管理の絶対ルール
 
-1. **グローバルライブラリに依存しない。** 使用するシンボル・フットプリント・3D モデルはプロジェクトローカル（`hardware/<board>/lib/`）にコミットし、`sym-lib-table` / `fp-lib-table` を相対パス（`${KIPRJMOD}`）で書く。誰の環境でも・CI でも同一に開けることを保証する。
+1. **グローバルライブラリに依存しない。** 使用するシンボル・フットプリント・3D モデルはプロジェクトローカル（`hardware/<board>/lib/`）にコミットし、`sym-lib-table` / `fp-lib-table` を **`${KIPRJMOD}` からの相対パス**で書く。**絶対パス（ドライブレター・ホームディレクトリ・`KICAD*_3DMODEL_DIR` 等の環境依存変数）は禁止**（Windows / Ubuntu 混在で壊れる）。3D モデルのパスも同様に `${KIPRJMOD}` 相対にする。誰の環境でも・CI でも同一に開けることを保証する。
 2. **新規・変更フットプリントは、データシートの推奨ランドパターンとの寸法照合を人間承認ゲートにする。** 照合結果（寸法値の突合表）を PR に添付する。フットプリントの寸法ミスは基板の作り直しに直結する唯一最大のリスク。
 3. シンボルのピン番号・ピン名はデータシートと完全一致させる（サブエージェントにデータシートを読ませて突合する）。
 

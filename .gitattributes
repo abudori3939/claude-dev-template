@@ -1,0 +1,22 @@
+# 改行コードの差分ノイズを防ぐ（Windows / Ubuntu の作業者が混在する前提）
+# テキストファイルは全 OS で LF に統一してコミット・チェックアウトする
+* text=auto eol=lf
+
+# KiCad ファイルはテキスト（S式 / JSON）。LF に固定する
+*.kicad_*     text eol=lf
+sym-lib-table text eol=lf
+fp-lib-table  text eol=lf
+*.net         text eol=lf
+
+# バイナリ（改行変換を絶対にしない）
+*.png  binary
+*.jpg  binary
+*.gif  binary
+*.pdf  binary
+*.pptx binary
+*.xlsx binary
+*.docx binary
+*.step binary
+*.stp  binary
+*.wrl  binary
+*.zip  binary
