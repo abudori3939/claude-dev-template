@@ -31,6 +31,13 @@ jobs:
       - name: Python 依存
         run: pip install --break-system-packages kiutils pytest
 
+      # Windows / Ubuntu 混在対策の自動ゲート。人間が目視で追わずに済ませるための要
+      # --expect-version にはプロジェクトで固定した KiCad フォーマットバージョンを渡す
+      - name: リポジトリ衛生チェック（CRLF / 一時ファイル / 絶対パス / バージョン混在）
+        run: python3 scripts/check_repo_hygiene.py --expect-version "$KICAD_FORMAT_VERSION"
+        env:
+          KICAD_FORMAT_VERSION: "20241229"   # ← プロジェクトの値に置き換える
+
       - name: ERC（lint 相当）
         run: |
           mkdir -p outputs
