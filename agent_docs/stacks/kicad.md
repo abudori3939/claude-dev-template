@@ -96,7 +96,26 @@ CLAUDE.md のフローは変えない。各工程を次のように対応させ�
    *.py  text eol=lf
    *.md  text eol=lf
    *.yml text eol=lf
+   # 例外: 改行コードが意味を持つファイル
+   *.bat text eol=crlf   # Windows バッチは CRLF 前提
+   *.cmd text eol=crlf
+   *.sh  text eol=lf     # CRLF だと shebang 解釈に失敗する
    ```
+
+   **なぜ KiCad ファイルを LF 固定にしてよいか**（＝ Windows で LF のまま開いて問題ないか）:
+
+   - KiCad の S式パーサは**改行を空白（トークン区切り）として扱う**ため、CR の有無で解釈は変わらない。`.kicad_pro` は JSON で、同じく改行は空白。
+   - **KiCad 自身が全プラットフォームで LF で書き出す**。つまり LF 固定は KiCad の素の挙動に合わせているだけで、逆に CRLF でチェックアウトすると、Windows の作業者が KiCad で一度保存した瞬間に**全行が LF に書き換わり、ファイル全体が差分になる**（これが避けたかった CRLF ノイズの正体）。
+   - したがって「CRLF のつもりで開いたら LF だった」という失敗はそもそも起きない。**懸念があるなら思い込みで CRLF に戻さず、実環境で下記の検証を1回通して確認する**（結果は ADR に残す）:
+
+     ```bash
+     # LF 固定のまま KiCad が読める／壊さないことの確認（Windows・Ubuntu 双方で1回ずつ）
+     kicad-cli sch erc --exit-code-violations -o outputs/erc.rpt <sch>   # 読めること
+     # KiCad GUI で開いて無変更のまま保存 → 差分が出ないこと（出たら改行以外の原因を調べる）
+     git diff --stat
+     ```
+
+   - 万一 KiCad 以外のツール（社内ツール等）が CRLF を要求する場合も、**リポジトリの正は LF に保ち、そのツールに渡す直前に変換する**。リポジトリ側の改行を変えない。
 
 2. **`.gitignore`** — KiCad が作業中に生成する一時・バックアップファイルは一切コミットしない（本質的な変更だけを git 管理する）:
 
