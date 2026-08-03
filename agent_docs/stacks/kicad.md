@@ -84,7 +84,7 @@ CLAUDE.md のフローは変えない。各工程を次のように対応させ�
 
 **方針: OS の混在は許容する。ただし「混ざっても大丈夫」を人間の注意力ではなく CI の緑/赤で保証する。**
 
-OS を1つに縛る（例:「必ず Windows で作業する」）制約は、**守られている間しか効かず、破られたことを検出できない**ため採らない。代わりに、混在で実際に壊れる4点を機械が毎 PR で検査する（[`scripts/check_repo_hygiene.py`](kicad/scripts/check_repo_hygiene.py)、CI 組み込みは [ci_kicad.md](kicad/ci_kicad.md)）:
+OS を1つに縛る（例:「必ず Windows で作業する」）制約は、**守られている間しか効かず、破られたことを検出できない**ため採らない。代わりに、混在で実際に壊れる4点を機械が毎 PR で検査する（[`check_repo_hygiene.py`](kicad/scripts/check_repo_hygiene.py)、CI 組み込みは [ci_kicad.md](kicad/ci_kicad.md)）。**スクリプトはコピーせず `agent_docs/stacks/kicad/scripts/` を直接呼ぶ**（コピーの二重管理を避ける）:
 
 | 混在で壊れるもの | 対策 | 検査方法 |
 |---|---|---|
