@@ -8,7 +8,8 @@
 
 **この節は目視で追わない。** 下記1項目を実行すれば、CRLF・一時ファイル・絶対パス・KiCad バージョン混在の4点は機械が判定する（CI でも同じコマンドが走る）。
 
-- [ ] `python scripts/check_repo_hygiene.py --expect-version <固定値>` が OK か（＝ CI の衛生チェックが緑か）
+- [ ] `python agent_docs/stacks/kicad/scripts/check_repo_hygiene.py --expect-version <固定値>` が OK か（＝ CI の衛生チェックが緑か）
+  - `--expect-version` は KiCad プロジェクト生成後に設定する（それまでは省略。省略しても残り3検査は機能する）
   - NG の場合の直し方はスクリプトの出力メッセージに従う（`.gitattributes` 修正＋`git add --renormalize .` / `git rm --cached` / `${KIPRJMOD}` 相対化 / KiCad バージョンを揃える）
 - [ ] 参照しているファイル名の大文字小文字が実ファイルと一致しているか（Ubuntu では区別される。スクリプトでは検出できないため目視）
 
