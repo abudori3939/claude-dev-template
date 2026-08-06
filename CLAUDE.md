@@ -41,7 +41,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## ドキュメント構成
 
 - **`agent_docs/`** … 開発エージェント向けの文書（このテンプレートの中身）。
-  - `agent_docs/common/` … スタック非依存の作法（再利用・基本いじらない）: `coding_standards.md` / `remote_setup.md` / `spec_format.md` / `adr_guide.md` / `pr_review.md`
+  - `agent_docs/common/` … スタック非依存の作法（再利用・基本いじらない）: `coding_standards.md` / `remote_setup.md` / `spec_format.md` / `adr_guide.md` / `pr_review.md` / `upstream_feedback.md`（テンプレートへの知見還元）
   - `agent_docs/stacks/` … スタック固有の作法（ビルド・テスト・lint・命名）。使用スタックの該当ガイドに従う（例: ROS 2 / C++ は `ros2_cpp.md`、PPTX 資料は `pptx_deliverable.md`、KiCad 基板設計は `kicad.md`）。
   - `agent_docs/project/` … このプロジェクト固有のドメイン設計（クローン後に育てる）: `plan.md` / `spec.md` / `progress.md` / `adr/`
   - `agent_docs/getting_started.md` … クローン後にまず読む手順書（フェーズ0）
