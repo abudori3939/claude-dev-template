@@ -7,7 +7,12 @@ CLAUDE.md の開発フロー（ドキュメント駆動・TDD・ブランチ→P
 > - [`kicad/workflow_sch.md`](kicad/workflow_sch.md) … kicad-cli / スクリプトによる回路図編集の作法とコード雛形
 > - [`kicad/ci_kicad.md`](kicad/ci_kicad.md) … GitHub Actions（ERC / DRC / テスト / 出図）の設定手順
 > - [`kicad/review_checklist.md`](kicad/review_checklist.md) … 出図前・発注前チェックリスト
-> - [`kicad/scripts/`](kicad/scripts/) … ネットリスト検証ヘルパ（接続テストの土台）と リポジトリ衛生チェック（OS 混在対策の自動ゲート）
+> - [`kicad/scripts/`](kicad/scripts/) … スタック共通スクリプト（**コピーせずこのパスを直接呼ぶ**）:
+>   - [`sexp_helper.py`](kicad/scripts/sexp_helper.py) … フォーマット保持型 S式編集（`.kicad_sch` 等の書き込みは必ずこれ経由）
+>   - [`netlist_check.py`](kicad/scripts/netlist_check.py) … 接続テストの土台（ネットリスト・アサーション）
+>   - [`compare_netlists.py`](kicad/scripts/compare_netlists.py) … 2つのネットリストの回路等価判定（可読化 PR の機械証明）
+>   - [`check_repo_hygiene.py`](kicad/scripts/check_repo_hygiene.py) … リポジトリ衛生チェック（OS 混在対策の自動ゲート）
+>   - [`normalize_lf.py`](kicad/scripts/normalize_lf.py) … Windows GUI 保存後の CRLF→LF 正規化
 
 ## このスタックの性格（コードと文書成果物の中間）
 
@@ -30,7 +35,7 @@ KiCad のファイル（`.kicad_sch` / `.kicad_pcb`）は**テキスト（S式�
 
 ```
 ┌ 正（source of truth） *.kicad_pro / *.kicad_sch / *.kicad_pcb   ← git 管理・PR レビュー対象
-├ 操作層               Python スクリプト（kiutils 等）＋ kicad-cli ← エージェントは GUI を持たないので必ずここを通る
+├ 操作層               Python（sexp_helper.py）＋ kicad-cli      ← エージェントは GUI を持たないので必ずここを通る
 └ 検証層               ERC / DRC / ネットリスト pytest / 出図の目視 ← 「テスト」の実体。CI でも同じコマンド
 ```
 
@@ -170,7 +175,7 @@ OS を1つに縛る（例:「必ず Windows で作業する」）制約は、**�
 
 - **KiCad のメジャーバージョンをプロジェクトで固定**し、CLAUDE.md「プロジェクト概要」に記録する（S式フォーマットはバージョン間で変わる）。**既定はリリース済みの最新メジャーバージョン（本ガイド執筆時点では 10.x）**とし、より新しいメジャーが出ていればそれを使う。**ただしユーザーが明示的にバージョンを指定した場合はそれに従う。** **エージェントがフォーマットバージョンを上げる保存をしてはならない**（上げる場合はユーザー合意＋ADR）。
 - `kicad-cli` のフルパスと Python 実行パスも CLAUDE.md「プロジェクト概要」に記録する（Windows 例: `C:\Program Files\KiCad\10.0\bin\kicad-cli.exe`）。
-- Python 依存: `pip install kiutils pytest`（S式操作とテスト用）。
+- Python 依存: `pip install pytest`（テスト用）。**S式の読み書きは同梱の [`sexp_helper.py`](kicad/scripts/sexp_helper.py) を使う。kiutils は使わない**（1.4.8 時点で KiCad 10 フォーマットに追随しておらず、再出力で `generator_version` / `embedded_fonts` 等が脱落して旧書式に再整形される＝「無変更保存でバイト一致」を満たせない）。実運用で不合格を確認済み。
 
 ## ライブラリ管理の絶対ルール
 

@@ -119,6 +119,34 @@ class Netlist:
                 refs.update(ref for ref, _, _ in nodes)
         return refs
 
+    # ---- 構造アサーション（無名ネット向け） ----
+    #
+    # 回路図を人間可読に整えると、ラベルを外した「純配管ネット」は KiCad が付ける
+    # 自動名（Net-(R1-Pad2) 等）になり、名前で接続を書けなくなる。そこで
+    # 「2部品が同じネットを共有しているか」という **構造** で検証する。
+
+    def shared_nets(self, ref_a: str, ref_b: str, exclude: tuple[str, ...] = ()) -> set[str]:
+        """2部品が同時に乗っているネット名の集合。
+
+        exclude には GND や電源レールなど「多数の部品が乗っていて当たり前」の
+        ネットを渡して除外する（除外しないと、ほぼ全ての部品対が GND を共有して
+        しまい、アサーションが常に真になって検出力を失う）。
+        """
+        nets_a = {name for name, nodes in self._nets.items() if any(r == ref_a for r, _, _ in nodes)}
+        nets_b = {name for name, nodes in self._nets.items() if any(r == ref_b for r, _, _ in nodes)}
+        shared = nets_a & nets_b
+        return {n for n in shared if not any(self._net_matches(n, ex) for ex in exclude)}
+
+    def is_connected(self, ref_a: str, pin_a: str, ref_b: str, pin_b: str) -> bool:
+        """2つのピンが同じネットに乗っているか（ネット名に依存しない接続判定）。
+
+        短絡していないことの表明（`assert not netlist.is_connected(...)`）にも使う。
+        """
+        try:
+            return self.net_of(ref_a, pin_a) == self.net_of(ref_b, pin_b)
+        except (KeyError, ValueError):
+            return False
+
     def nets(self) -> list[str]:
         return sorted(self._nets)
 
