@@ -42,7 +42,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **`agent_docs/`** … 開発エージェント向けの文書（このテンプレートの中身）。
   - `agent_docs/common/` … スタック非依存の作法（再利用・基本いじらない）: `coding_standards.md` / `remote_setup.md` / `spec_format.md` / `adr_guide.md` / `pr_review.md` / `upstream_feedback.md`（テンプレートへの知見還元）
-  - `agent_docs/stacks/` … スタック固有の作法（ビルド・テスト・lint・命名）。使用スタックの該当ガイドに従う（例: ROS 2 / C++ は `ros2_cpp.md`、PPTX 資料は `pptx_deliverable.md`、KiCad 基板設計は `kicad.md`）。
+  - `agent_docs/stacks/` … スタック固有の作法（ビルド・テスト・lint・命名）。使用スタックの該当ガイドに従う（例: ROS 2 / C++ は `ros2_cpp.md`、PPTX 資料は `pptx_deliverable.md`、KiCad 基板設計は `kicad.md`、RP2040 / RP2350 ファームウェアは `rp2xxx_platformio.md`）。
   - `agent_docs/project/` … このプロジェクト固有のドメイン設計（クローン後に育てる）: `plan.md` / `spec.md` / `progress.md` / `adr/`
   - `agent_docs/getting_started.md` … クローン後にまず読む手順書（フェーズ0）
 - **`docs/`** … （任意）エンドユーザー向けのプロジェクト説明ドキュメント。配布時に作成する。**agent_docs とは別物。**
@@ -92,6 +92,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 > **文書成果物スタック（PPTX 資料など）の場合**: 成果物がプログラムでないプロジェクトでは、このフローを**レッド＝骨子（.md）のユーザー承認 → グリーン＝骨子どおりの初稿生成 → リファクタ＝体裁・表記の仕上げ**に読み替え、粒度は**資料全体で1サイクル（1PR）**とする。読み替え表・検証ゲートは `agent_docs/stacks/pptx_deliverable.md` に従う。
 
+> **ファームウェア（RP2040 / RP2350）スタックの場合**: フロー自体は通常どおり（レッド＝**ホスト側 native ユニットテスト**のアサーション失敗）。ただし**エージェントは実機を持たない**ため、サイクルの最後に**実機ゲート**（人間が書き込み・動作確認し、ログを PR に貼る）を必ず通す。ロジックをハード非依存に分離する規約を含め `agent_docs/stacks/rp2xxx_platformio.md` に従う。
+
 > **KiCad / 基板設計スタックの場合**: **レッド＝回路仕様（部品・ピン割当・接続表）の承認＋接続テスト（ネットリスト pytest）を先に書いて失敗確認 → グリーン＝回路図実装でテスト・ERC を通す → リファクタ＝図の整理**に読み替え、lint ＝ ERC / DRC、粒度は**1回路ブロックで1サイクル（1PR）**とする。レイアウト工程の読み替えを含め `agent_docs/stacks/kicad.md` に従う。
 
 ### ブランチ・PR・レビュー
@@ -131,4 +133,4 @@ PR をレビューに出す前に、以下をすべて満たすこと:
 ## ビルド・テスト
 
 ビルド／テスト／lint の具体的な手順は、使用スタックのガイド（`agent_docs/stacks/<該当>.md`）に従う。
-例: ROS 2 / C++ は `agent_docs/stacks/ros2_cpp.md`（colcon / gtest / ament_lint）、KiCad 基板設計は `agent_docs/stacks/kicad.md`（kicad-cli / ネットリスト pytest / ERC・DRC）。
+例: ROS 2 / C++ は `agent_docs/stacks/ros2_cpp.md`（colcon / gtest / ament_lint）、KiCad 基板設計は `agent_docs/stacks/kicad.md`（kicad-cli / ネットリスト pytest / ERC・DRC）、RP2040 / RP2350 ファームウェアは `agent_docs/stacks/rp2xxx_platformio.md`（pio run / pio test -e native / pio check）。
