@@ -60,8 +60,8 @@ test/test_*/    native ユニットテスト（Unity）
 python3 -m pip install --user -U platformio      # または pipx install platformio
 pio --version
 
-# 静的解析ツール（pio check が呼ぶ）
-sudo apt install -y cppcheck clang-format
+# 静的解析ツール（pio check が呼ぶ）。clang-format は CI と同じメジャー版を入れる
+sudo apt install -y cppcheck clang-format-18
 
 # USB デバイス権限（書き込み・シリアル。人間が一度だけ実行）
 curl -fsSL https://raw.githubusercontent.com/platformio/platformio-core/develop/platformio/assets/system/99-platformio-udev.rules \
@@ -83,9 +83,14 @@ default_envs = pico
 platform = https://github.com/maxgerhardt/platform-raspberrypi.git#<commit-sha>
 framework = arduino
 board_build.core = earlephilhower
-build_flags = -Wall -Wextra -Werror
+; build_flags は core / 外部ライブラリを含む「すべてのソース」に効く。ここに -Werror を置くと
+; 他人のコードの警告でビルドが落ちるため、-Werror は自分のコードにだけ効く build_src_flags に置く。
+build_flags = -Wall -Wextra
+build_src_flags = -Werror
 monitor_speed = 115200
 check_tool = cppcheck
+; 既定の検査対象は src/ と include/ のみ。ロジックは lib/ にあるので明示的に含める（最重要）
+check_patterns = src, lib
 check_flags = cppcheck: --enable=warning,style,performance --inline-suppr
 check_severity = medium, high
 
@@ -101,7 +106,8 @@ board = rpipico2
 [env:native]
 platform = native
 test_framework = unity
-build_flags = -std=c++17 -Wall -Wextra -Werror -DUNIT_TEST
+build_flags = -std=c++17 -Wall -Wextra -DUNIT_TEST   ; Unity 本体にも効くため -Werror は入れない
+check_patterns = src, lib
 ```
 
 - **core のバージョン固定**が必要なら `platform_packages` で指定する
@@ -109,6 +115,9 @@ build_flags = -std=c++17 -Wall -Wextra -Werror -DUNIT_TEST
   ツールチェーンを `platform_packages` で注入する古い作法は非推奨なので使わない。
 - 外部ライブラリは `lib_deps` で**バージョンを固定**する（`@^1.2.3` ではなく `@1.2.3`）。
 - 自作基板を使う場合はボード定義を `boards/<board>.json` に置き、`board = <board>` で参照する。
+- **`build_src_flags` は `src/` にしか効かない。** `lib/<domain>/` は「ライブラリ」として別途ビルドされるため、
+  自作ロジック層にも `-Werror` を効かせたい場合は `lib/<domain>/library.json` に
+  `{"build": {"flags": ["-Werror"]}}` を書く（外部ライブラリには波及しない）。
 
 ## ビルド・テスト・実行コマンド
 
@@ -116,8 +125,11 @@ build_flags = -std=c++17 -Wall -Wextra -Werror -DUNIT_TEST
 pio test -e native            # ★ ユニットテスト（TDD のレッド／グリーンはここで判定）
 pio run -e pico               # ビルド（RP2040）
 pio run -e pico2              # ビルド（RP2350）
-pio check -e pico             # 静的解析（cppcheck）
-clang-format -i src/**/*.cpp lib/**/*.{h,cpp}   # フォーマット
+pio check -e pico             # 静的解析（cppcheck。check_patterns で src/ と lib/ を対象にすること）
+
+# フォーマット。CI と同一の対象集合にするため git ls-files で列挙する
+#（bash の ** は既定で再帰しないため src/**/*.cpp のような glob は使わない）
+git ls-files '*.h' '*.hpp' '*.c' '*.cc' '*.cpp' | xargs -r clang-format -i
 
 # ↓ 実機。エージェントは実行せず、人間に依頼する
 pio run -e pico -t upload     # 書き込み
@@ -150,9 +162,11 @@ native テストが緑でも、実機で動く保証にはならない。**1 サ
 
 ## 自動品質ゲート
 
-- ビルド警告ゼロ（`-Wall -Wextra -Werror`）。抑制する場合は理由をコメントで明記。
-- `pio check`（cppcheck）の指摘ゼロ。
+- ビルド警告ゼロ（自分のコードは `-Werror`。core / 外部ライブラリの警告で落とさないよう `build_src_flags` に置く）。
+- `pio check`（cppcheck）の指摘ゼロ。**`check_patterns = src, lib` を必ず設定する**（既定では `lib/` が検査されず、
+  ロジック層を一度も読まないまま「指摘ゼロ」になる）。
 - `clang-format` 済み（`.clang-format` をリポジトリ直下に置く。CI では `--dry-run --Werror` で検査）。
+  ローカルと CI で**同じバージョン・同じ対象ファイル集合**を使う。
 - **Flash / RAM 使用量**をビルドログから PR に記載する（回帰の早期発見用。必須ゲートにはしない）。
 
 ## CI（GitHub Actions）
@@ -181,20 +195,32 @@ jobs:
           key: pio-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
       - name: Install
         run: |
-          pip install -U platformio
-          sudo apt-get update && sudo apt-get install -y cppcheck clang-format
+          # ツールもバージョンを固定する（勝手な更新で無関係の PR が赤くなるのを防ぐ）。
+          # 版は「実際に手元で通したもの」に置き換える。clang-format はランナーの OS で入手可能な版に合わせる。
+          pip install platformio==<ver>
+          sudo apt-get update && sudo apt-get install -y cppcheck clang-format-18
       - name: Unit tests (host)
+        if: ${{ hashFiles('test/**') != '' }}
         run: pio test -e native
       - name: Build (RP2040 / RP2350)
+        if: ${{ hashFiles('platformio.ini') != '' }}
         run: pio run -e pico -e pico2
       - name: Static analysis
+        if: ${{ hashFiles('platformio.ini') != '' }}
         run: pio check -e pico --fail-on-defect medium --fail-on-defect high
       - name: Format check
-        run: clang-format --dry-run --Werror $(git ls-files '*.h' '*.cpp')
+        run: |
+          files=$(git ls-files '*.h' '*.hpp' '*.c' '*.cc' '*.cpp')
+          [ -z "$files" ] || clang-format-18 --dry-run --Werror $files
 ```
 
-> 初回ビルドは platform / toolchain のダウンロードで数分かかる。キャッシュキーは `platformio.ini` の
-> ハッシュにしてあるので、依存を更新した PR ではキャッシュミスが起きる（想定どおり）。
+- **各ステップに `hashFiles(...)` のガードを付ける。** フェーズ0（`plan.md` / `spec.md` だけの PR）では
+  `platformio.ini` も `test/` もまだ存在せず、ガードが無いと「直しようのない赤」になる。
+- `pip install platformio==<ver>` と `clang-format-<N>` は**バージョンを固定**する。特に clang-format は
+  メジャー更新で既定の整形結果が変わり、無関係の PR が一斉に赤くなる。**ローカルでも同じメジャー版を使う**こと。
+- フォーマット検査の対象は**ローカルのコマンドと同一の集合**にする（片方だけ拡張子が漏れると検知できない）。
+- 初回ビルドは platform / toolchain のダウンロードで数分かかる。キャッシュキーは `platformio.ini` の
+  ハッシュにしてあるので、依存を更新した PR ではキャッシュミスが起きる（想定どおり）。
 
 ## リポジトリ構成（このスタックで追加するもの）
 
@@ -262,7 +288,7 @@ jobs:
 
 ## レビューチェックリスト（PR を出す前に自己点検）
 
-- [ ] `pio test -e native` 緑 ／ `pio run -e pico -e pico2` 両方ビルド成功 ／ `pio check` 指摘ゼロ
+- [ ] `pio test -e native` 緑 ／ `pio run -e pico -e pico2` 両方ビルド成功 ／ `pio check` 指摘ゼロ（`lib/` も検査対象に入っているか）
 - [ ] **ロジック層に `Arduino.h` 依存が漏れていない**（`millis()` 直呼び・`Serial` 直叩きが無い）
 - [ ] 新しい振る舞いに対応するテストが追加されている（実機で見つけた不具合は再現テスト付き）
 - [ ] ピン番号が定数化され、`pin_map.md`（自作基板なら回路図）と一致している
