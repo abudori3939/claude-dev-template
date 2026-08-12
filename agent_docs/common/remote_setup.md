@@ -22,69 +22,29 @@ git push -u origin main
 gh repo edit OWNER/REPO --default-branch main
 ```
 
-## 3. ブランチ保護（main への直接変更を禁止＝フローの要）
+## 3. main への直接変更をどう防ぐか（ブランチ保護は前提としない）
 
-GitHub の **Repository Ruleset** を使う（private リポジトリでも無料で利用可）。
-`main` に対し「PR 経由必須・force push 禁止・削除禁止」を全員に強制する。
+**このテンプレートは GitHub のブランチ保護（Repository Ruleset / Branch protection）を前提としない。**
+無料プランでは利用できない場合があるため、`main` 直編集の禁止は**運用ルールで担保する**。
 
-```bash
-gh api -X POST /repos/OWNER/REPO/rulesets --input ruleset-main.json
-```
+担保のしかた:
+- **CLAUDE.md「セッション開始時の判定 / 手順0」** … 何かを書き込む前に必ず作業ブランチを切る（ドキュメントだけの変更も例外なし）。
+- **CLAUDE.md「ブランチ・PR・レビュー」** … 変更は作業ブランチ → PR → レビュー → マージ経由でのみ反映する。
+- **CI（GitHub Actions）** … PR ごとに build + test + lint を実行し、緑でない PR はマージしない（人手の確認ではなく緑チェックで判断する）。
 
-`ruleset-main.json`（雛形）:
+> 仕組みで強制していない以上、**エージェントもユーザーも「まずブランチを切る」を毎回守ることが唯一の防波堤**になる。
+> 迷ったらブランチを切る。うっかり `main` で編集を始めたら、その時点でコミット前に作業ブランチへ退避する（`git switch -c <branch>`）。
 
-```json
-{
-  "name": "protect-main",
-  "target": "branch",
-  "enforcement": "active",
-  "conditions": { "ref_name": { "include": ["refs/heads/main"], "exclude": [] } },
-  "rules": [
-    { "type": "deletion" },
-    { "type": "non_fast_forward" },
-    {
-      "type": "pull_request",
-      "parameters": {
-        "required_approving_review_count": 0,
-        "dismiss_stale_reviews_on_push": false,
-        "require_code_owner_review": false,
-        "require_last_push_approval": false,
-        "required_review_thread_resolution": false,
-        "allowed_merge_methods": ["merge", "squash", "rebase"]
-      }
-    }
-  ],
-  "bypass_actors": []
-}
-```
-
-要点:
-- `pull_request` … `main` への変更は必ず PR 経由（直接 push をブロック）
-- `non_fast_forward` … force push をブロック
-- `deletion` … ブランチ削除をブロック
-- `bypass_actors: []` … 管理者も含め例外なし（エージェントの直接変更を確実に防ぐ）
-
-### 承認数についての注意（重要）
-
-雛形では `required_approving_review_count: 0` にしている。理由:
-
-- **エージェントとユーザーが同一 GitHub アカウントを共有している場合、自分の PR を自分で承認できず、必須承認数を 1 以上にするとマージできなくなる**（デッドロック）。
-- そのため承認は「必須レビュー数」ではなく**プロセス上のルール**（CLAUDE.md のフロー）で担保し、保護ルールは「PR 経由の強制」のみ行う。
-- レビュー専用の別アカウント／チームが用意できる場合は `required_approving_review_count` を 1 に上げ、`bypass_actors` でレビュアーのみ例外設定するとより厳格にできる。
-
-### CI 必須化（GitHub Actions 導入後に追加）
-
-CI ワークフローを追加したら、ruleset に `required_status_checks` ルールを足し、
-build/test/lint のチェックが緑でない PR をマージ不可にする（CLAUDE.md「CI」参照）。
+（有料プラン等でブランチ保護を使える環境なら設定してもよいが、本テンプレートの必須手順ではない。）
 
 ## 4. 確認
 
 ```bash
-gh api /repos/OWNER/REPO/rulesets                 # ruleset 一覧
-git push origin main 2>&1 | head                  # 保護後は直接 push が拒否されることを確認
+git rev-parse --abbrev-ref HEAD    # 作業前: main でないことを確認
+gh pr list                         # PR 経由で変更が流れているかを確認
 ```
 
-## 日常の作業フロー（保護後）
+## 日常の作業フロー
 
 ```bash
 git switch -c feature/xxx          # 作業ブランチを切る（main では作業しない）
