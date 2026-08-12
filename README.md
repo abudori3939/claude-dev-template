@@ -19,7 +19,8 @@ Claude Code で **ドキュメント駆動 × TDD × PR レビュー**の小さ�
 2. `agent_docs/getting_started.md` を開き、**フェーズ0（ドメイン設計）**から始める。
    エージェントはセッション開始時にフェーズ0を検知し、要件定義を主導する。
 3. 使用スタックの `agent_docs/stacks/<stack>.md` を確認（無ければ作成）。
-4. `plan.md` / `spec.md` が固まったら、`agent_docs/common/remote_setup.md` で `main` のブランチ保護を設定。
+4. `plan.md` / `spec.md` が固まったら、`agent_docs/common/remote_setup.md` でリモート（GitHub）を準備。
+   **ブランチ保護は前提としない**（無料プランで使えない場合があるため）。`main` 直編集の禁止は運用ルールで守る。
 5. 以後は `CLAUDE.md` の**着手ゲート**から TDD サイクルを回す。
 
 ## 設計思想（最小・シンプル）

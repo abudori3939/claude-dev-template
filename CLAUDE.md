@@ -102,6 +102,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - CI が緑で、ユーザーが問題ないと確認したらマージする（**PR で合格したコードのみマージ**）。
 - **プロジェクト完了まで、この小さなフロー（着手確認 → 計画 → レッド確認 → テスト承認 → グリーン → 報告/停止 → レビュー → マージ）を繰り返す。**
 
+> **GitHub のブランチ保護は前提としない**（無料プランでは使えない場合があるため）。したがって `main` 直編集の禁止は仕組みで強制されておらず、**このルールを毎回守ること自体が唯一の防波堤**になる。手順0（まず作業ブランチを切る）を省略しないこと。詳細は `agent_docs/common/remote_setup.md`。
+
 ## 品質維持・技術的負債対策
 
 高品質を維持し負債を溜めないため、以下を運用する。スタック非依存の規約は **`agent_docs/common/coding_standards.md`**、具体的なツール・コマンドは **`agent_docs/stacks/<該当>.md`** を参照（CLAUDE.md は簡潔に保つ）。
