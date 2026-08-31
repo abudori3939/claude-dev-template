@@ -6,7 +6,7 @@ Claude Code で **ドキュメント駆動 × TDD × PR レビュー**の小さ�
 
 - `CLAUDE.md` — ルール本体（セッション開始時の判定・開発フロー・品質ルール）。エージェントが最初に読む。
 - `agent_docs/` — **開発エージェント向け**の文書。
-  - `common/` — スタック非依存の作法（再利用・基本いじらない）: `coding_standards.md` / `remote_setup.md` / `spec_format.md` / `adr_guide.md` / `pr_review.md`
+  - `common/` — スタック非依存の作法（再利用・基本いじらない）: `coding_standards.md` / `remote_setup.md` / `spec_format.md` / `adr_guide.md` / `pr_review.md` / `agent_delegation.md`
   - `stacks/` — スタック固有の作法（ビルド・テスト・lint・命名）。`ros2_cpp.md` / `ros2_python.md` / `rp2xxx_platformio.md`（RP2040・RP2350 ファームウェア）/ `kicad.md`（基板設計）/ `pptx_deliverable.md`（資料）を同梱。他スタックは追加する。
   - `project/` — **このプロジェクト固有**のドメイン設計（クローン後に育てる）: `plan.md` / `spec.md` / `progress.md` / `adr/`
   - `getting_started.md` — クローン後にまず読む手順書（フェーズ0）
