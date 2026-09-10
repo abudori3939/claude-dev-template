@@ -26,7 +26,7 @@ colcon test-result --verbose
 
 - ROS 2 標準の `ament_lint_auto` に加え、C++ 向けに **clang-format / clang-tidy / cppcheck** を導入し、`colcon test` で実行する。
 - `ament_clang_format` / `ament_clang_tidy` / `ament_cppcheck` を `package.xml` の `<test_depend>` と `CMakeLists.txt` に追加する。
-- 警告ゼロを維持。抑制する場合は理由をコメントで明記。
+- 警告ゼロを維持。抑制する場合は理由をコメントで明記（厳しさは `agent_docs/project/plan.md`「開発モード」に従う。PoC は format ＋ error のみ門）。
 
 ## コーディング規約（C++ / ROS 2）
 
