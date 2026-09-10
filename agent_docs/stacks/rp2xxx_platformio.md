@@ -167,7 +167,7 @@ native テストが緑でも、実機で動く保証にはならない。**1 サ
 
 ## 自動品質ゲート
 
-- ビルド警告ゼロ（自分のコードは `-Werror`。core / 外部ライブラリの警告で落とさないよう `build_src_flags` に置く）。
+- ビルド警告ゼロ（自分のコードは `-Werror`。core / 外部ライブラリの警告で落とさないよう `build_src_flags` に置く）。PoC モードでも**実機ゲートと対象 MCU 全ビルドは緩めない**（`agent_docs/project/plan.md`「PoC でも緩めないもの」）。
 - `pio check`（cppcheck）の指摘ゼロ。**`check_patterns = src, lib` を必ず設定する**（既定では `lib/` が検査されず、
   ロジック層を一度も読まないまま「指摘ゼロ」になる）。
 - `clang-format` 済み（`.clang-format` をリポジトリ直下に置く。CI では `--dry-run --Werror` で検査）。

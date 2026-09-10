@@ -29,7 +29,7 @@ colcon test-result --verbose
 
 - ROS 2 標準の lint を `colcon test` で実行する: **`ament_flake8` / `ament_pep257` / `ament_copyright` / `ament_xmllint`**（`test/` にテストを置き、`package.xml` の `<test_depend>` に追加）。
 - 加えて **ruff（lint+format）/ black / mypy** を導入すると効果が高い。`pyproject.toml` に設定を集約。
-- 警告ゼロを維持。抑制する場合は理由をコメント（`# noqa: <code> 理由`）で明記。
+- 警告ゼロを維持。抑制する場合は理由をコメント（`# noqa: <code> 理由`）で明記（厳しさは `agent_docs/project/plan.md`「開発モード」に従う。PoC は format ＋ error のみ門）。
 
 ## コーディング規約（Python / ROS 2）
 

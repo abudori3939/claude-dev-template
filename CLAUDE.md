@@ -130,7 +130,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 高品質を維持し負債を溜めないため、以下を運用する。スタック非依存の規約は **`agent_docs/common/coding_standards.md`**、具体的なツール・コマンドは **`agent_docs/stacks/<該当>.md`** を参照（CLAUDE.md は簡潔に保つ）。
 
 ### 完了の定義（Definition of Done）
-PR をレビューに出す前に、以下をすべて満たすこと。**厳しさは `plan.md`「開発モード」（PoC / 製品）に従う**:
+PR をレビューに出す前に、以下をすべて満たすこと。**厳しさは `plan.md`「開発モード」（PoC / 製品）に従う**。
+**ただし PoC モードでも緩めないものがある**（TDD のゲート全部・スタック固有の人間ゲート・ERC / DRC・実機ゲート・安全に関わる検証）。一覧は `plan.md`「PoC でも緩めないもの」:
 - [ ] 全テストが緑（プロジェクトのテストコマンドでアサーション通過）
 - [ ] lint / format / 静的解析: **製品モード＝警告ゼロ**／**PoC モード＝ format ＋ error のみ**（warning は門にしない）
 - [ ] テストカバレッジ: **製品モード＝ PR 前より低下していない**／**PoC モード＝測るが門にしない**（`agent_docs/common/test_policy.md`）
@@ -144,7 +145,7 @@ PR をレビューに出す前に、以下をすべて満たすこと。**厳し
 
 ### CI（GitHub Actions）
 - PR ごとに **build + test + lint** を自動実行する。
-- **PoC モードでは CI を「build ＋ 境界テスト ＋ format」に絞り、目標3分以内に保つ。** 遅い CI と増え続けるテストは PoC の速度を殺し、検証に入れないまま終わる原因になる（`plan.md`「開発モード」）。
+- **PoC モードでは CI を「build ＋ 境界テスト ＋ format」に絞る**（ソフトウェアスタックは目標3分以内、ビルドが重いスタックは「毎 PR に必要な最小構成」に）。遅い CI と増え続けるテストは PoC の速度を殺し、検証に入れないまま終わる原因になる（`plan.md`「開発モード」）。
 - 「PR で合格したコードのみマージ」は人手ではなく**緑チェックで保証**する。CI が緑でない PR はマージしない。
 
 ### 設計判断の記録（ADR）
