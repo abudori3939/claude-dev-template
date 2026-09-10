@@ -28,6 +28,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 1. `getting_started.md` の手順に従い、作業ブランチ上で `plan.md` → `spec.md` を仕上げ、ユーザーの承認を得る。
    - **`spec.md` は 2 層で育てる**（`agent_docs/common/spec_format.md`）。Phase 0 では **テンプレのまま放置せず**、必ず次を実値で確定する: ①システム全体の入出力 ②**モジュール間インターフェース（境界の契約）**＝ Phase をまたぐ公開 I/O ③各機能の **目的 / 完了の目安**。
    - **関数レベルの入出力・振る舞いは Phase 0 では書かない。** それは各機能を実装する Phase の着手時（plan mode）に追記する。
+   - **層1（境界）は「grilling ラウンド」で詰める**（`getting_started.md`）。**打ち切り条件（層1まで／ラウンド上限／不可逆性テスト）を必ず守り、無限に問い続けない。**
+   - **開発モード（PoC / 製品）をユーザーと決め、`plan.md`「開発モード」に記録する。** 品質ゲートの厳しさ（テストの置き場所・カバレッジ・lint・CI）はこのモードに従う。
 2. **`README.md` をテンプレートの説明から「このプロジェクトの説明」に書き換える。** plan.md / spec.md で固めた理解をもとに、**このプログラムが何をするか・主要な入出力・全体構成・使い方**を、現時点でわかる範囲で説明する（テンプレート自身の使い方や「Use this template」の記述は削除する）。これは配布用ではなく、**Phase 0 時点でどこまで正しく理解・計画できたかを示すバロメータ**でもある。書けない箇所が多いなら計画の解像度が足りないサイン。
 3. **`progress.md` を更新する。** フェーズ0が完了したこと・現在地・次のタスク（フェーズ1で最初に着手する機能）・未解決事項を書き、フェーズを「実装フェーズ」へ進める。途中参加のエージェントが progress.md だけで続きから作業できる状態にする。
 4. **これらの成果物（`plan.md` / `spec.md` / `README.md` / `progress.md`）を 1 つの PR にし、レビューを受けてから `main` へマージする。** コード実装と同じく「作業ブランチ → PR → レビュー → マージ」を必ず通す（ドキュメントだけの PR でも省略しない）。`README.md` と `progress.md` の更新も必ずこの PR に含める。
@@ -41,7 +43,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## ドキュメント構成
 
 - **`agent_docs/`** … 開発エージェント向けの文書（このテンプレートの中身）。
-  - `agent_docs/common/` … スタック非依存の作法（再利用・基本いじらない）: `coding_standards.md` / `remote_setup.md` / `spec_format.md` / `adr_guide.md` / `pr_review.md` / `agent_delegation.md`（分業とモデル選択） / `upstream_feedback.md`（テンプレートへの知見還元）
+  - `agent_docs/common/` … スタック非依存の作法（再利用・基本いじらない）: `coding_standards.md` / `test_policy.md`（テストをどこに置くか・いつ消すか） / `remote_setup.md` / `spec_format.md` / `adr_guide.md` / `pr_review.md` / `agent_delegation.md`（分業とモデル選択） / `upstream_feedback.md`（テンプレートへの知見還元）
   - `agent_docs/stacks/` … スタック固有の作法（ビルド・テスト・lint・命名）。使用スタックの該当ガイドに従う（例: ROS 2 / C++ は `ros2_cpp.md`、PPTX 資料は `pptx_deliverable.md`、KiCad 基板設計は `kicad.md`、RP2040 / RP2350 ファームウェアは `rp2xxx_platformio.md`）。
   - `agent_docs/project/` … このプロジェクト固有のドメイン設計（クローン後に育てる）: `plan.md` / `spec.md` / `progress.md` / `adr/`
   - `agent_docs/getting_started.md` … クローン後にまず読む手順書（フェーズ0）
@@ -80,12 +82,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    - 未確定（Open Questions）が残っていればそれを示し、必要なら確認を取る。
 4. 承認が得られてから、plan モードで実装計画 → TDD（レッド）へ進む。
 
-> 着手ゲートは軽量第一。確認は「機能名＋I/O＋完了の目安＋着手可否」で完結させ、ユーザーが一目で Go 判断できる粒度に保つ。差分規模が `plan.md`「フェーズ粒度の方針」の較正レベルに収まるかも一言で確認する。
+> 着手ゲートは軽量第一。確認は「機能名＋I/O＋完了の目安＋**開発モード**＋着手可否」で完結させ、ユーザーが一目で Go 判断できる粒度に保つ。差分規模が `plan.md`「フェーズ粒度の方針」の較正レベルに収まるかも一言で確認する。**着手ゲートで grilling ラウンドを回さない**（あれはフェーズ0で層1を詰めるための道具）。
 
 ### TDD（テスト駆動開発：レッド→グリーン→リファクタリング）
 1. **実装着手前に必ず plan モードで実装計画を立てる。**
 2. **レッド**: 先に失敗するテストを書く。テストが「失敗する」ことをユーザーに確認してもらう。
    - **コンパイル／ビルドエラーはレッドとして認めない。** テストはビルドが通ったうえで「アサーション失敗」していること。
+   - **テストを書く境界（どの公開 I/F で観測するか）を、書く前にユーザーと合意する。** 置き場所・避けるべきテスト・**壊れたテストの消し方**は `agent_docs/common/test_policy.md`。**PoC モードでは境界（spec 層1）にだけ置き、内部関数のテストは書かない**（`plan.md`「開発モード」）。
 3. テストコードをユーザーに提示し、**承認を得る**。
 4. **グリーン**: 承認後、テストが通る最小限の実装を行う。
 5. **リファクタリング**: テストが緑のまま、重複除去・命名改善・責務整理を行う。掃除も同じ PR に含め、「動くが汚い」コードを次サイクルへ持ち越さない。
@@ -127,13 +130,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 高品質を維持し負債を溜めないため、以下を運用する。スタック非依存の規約は **`agent_docs/common/coding_standards.md`**、具体的なツール・コマンドは **`agent_docs/stacks/<該当>.md`** を参照（CLAUDE.md は簡潔に保つ）。
 
 ### 完了の定義（Definition of Done）
-PR をレビューに出す前に、以下をすべて満たすこと:
+PR をレビューに出す前に、以下をすべて満たすこと。**厳しさは `plan.md`「開発モード」（PoC / 製品）に従う**:
 - [ ] 全テストが緑（プロジェクトのテストコマンドでアサーション通過）
-- [ ] lint / format / 静的解析の警告ゼロ（下記の自動ゲート）
-- [ ] テストカバレッジが PR 前より低下していない
+- [ ] lint / format / 静的解析: **製品モード＝警告ゼロ**／**PoC モード＝ format ＋ error のみ**（warning は門にしない）
+- [ ] テストカバレッジ: **製品モード＝ PR 前より低下していない**／**PoC モード＝測るが門にしない**（`agent_docs/common/test_policy.md`）
 - [ ] `agent_docs/project/progress.md` を更新済み／計画ドキュメントと実装が一致
 - [ ] public な関数・設定パラメータに説明コメント、`TODO` には理由を併記
-- [ ] 設計が計画から逸脱した場合は ADR（`agent_docs/project/adr/`）に記録済み
+- [ ] 設計が計画から逸脱した場合は ADR（`agent_docs/project/adr/`）に記録済み（**PoC モードは不可逆な判断のみ**）
 
 ### 自動品質ゲート
 - format / lint / 静的解析を導入し、テストと同じコマンドで実行できるようにする。具体的なツール・コマンドはスタックガイド（`agent_docs/stacks/<該当>.md`）に従う（例: ROS 2 / C++ なら `ament_lint_auto` ＋ clang-format / clang-tidy / cppcheck）。
@@ -141,6 +144,7 @@ PR をレビューに出す前に、以下をすべて満たすこと:
 
 ### CI（GitHub Actions）
 - PR ごとに **build + test + lint** を自動実行する。
+- **PoC モードでは CI を「build ＋ 境界テスト ＋ format」に絞り、目標3分以内に保つ。** 遅い CI と増え続けるテストは PoC の速度を殺し、検証に入れないまま終わる原因になる（`plan.md`「開発モード」）。
 - 「PR で合格したコードのみマージ」は人手ではなく**緑チェックで保証**する。CI が緑でない PR はマージしない。
 
 ### 設計判断の記録（ADR）
