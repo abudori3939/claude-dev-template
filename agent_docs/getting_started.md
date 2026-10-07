@@ -110,6 +110,6 @@
 - [ ] `agent_docs/project/plan.md` を自プロジェクト用に書き換え、`<...>` プレースホルダが残っていない
 - [ ] `agent_docs/project/spec.md` の **Phase 0 層を確定した**:「システム全体の入出力」「モジュール間インターフェース（境界の契約）」を実値で記入し、各機能（plan の Phase と 1:1）の **目的 / 完了の目安** を埋めた（これらの欄に `<...>` プレースホルダが残っていない）。関数レベル I/O は各 Phase 着手時に書くため未記入で可
 - [ ] `README.md` をテンプレート説明から **このプロジェクトの説明**（何をするか・主要I/O・全体構成・使い方）へ書き換え、テンプレート自身の使い方や「Use this template」の記述を削除した
-- [ ] `agent_docs/project/progress.md` を実装フェーズに更新した
+- [ ] `agent_docs/project/progress.md` を実装フェーズに更新した（フェーズ0の PR も、レビュー収束後・マージ前に締めを再確認する。`agent_docs/common/pr_review.md`「マージ前の締め」）
 - [ ] リモート（GitHub）を準備した（`agent_docs/common/remote_setup.md`。ブランチ保護は不要）
 - [ ] （任意）エンドユーザー向けドキュメントは `docs/` に別途用意する
