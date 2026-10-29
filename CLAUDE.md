@@ -43,7 +43,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## ドキュメント構成
 
 - **`agent_docs/`** … 開発エージェント向けの文書（このテンプレートの中身）。
-  - `agent_docs/common/` … スタック非依存の作法（再利用・基本いじらない）: `coding_standards.md` / `test_policy.md`（テストをどこに置くか・いつ消すか） / `remote_setup.md` / `spec_format.md` / `adr_guide.md` / `pr_review.md` / `agent_delegation.md`（分業とモデル選択） / `upstream_feedback.md`（テンプレートへの知見還元）
+  - `agent_docs/common/` … スタック非依存の作法（再利用・基本いじらない）: `coding_standards.md` / `test_policy.md`（テストをどこに置くか・いつ消すか） / `remote_setup.md` / `spec_format.md` / `adr_guide.md` / `pr_review.md` / `agent_delegation.md`（分業とモデル選択） / `human_verification.md`（人間に確認を依頼するときの手順書） / `upstream_feedback.md`（テンプレートへの知見還元）
   - `agent_docs/stacks/` … スタック固有の作法（ビルド・テスト・lint・命名）。使用スタックの該当ガイドに従う（例: ROS 2 / C++ は `ros2_cpp.md`、PPTX 資料は `pptx_deliverable.md`、KiCad 基板設計は `kicad.md`、RP2040 / RP2350 ファームウェアは `rp2xxx_platformio.md`）。
   - `agent_docs/project/` … このプロジェクト固有のドメイン設計（クローン後に育てる）: `plan.md` / `spec.md` / `progress.md` / `adr/`
   - `agent_docs/getting_started.md` … クローン後にまず読む手順書（フェーズ0）
@@ -107,6 +107,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **グリーンで止まらない。** 実装（グリーン＋リファクタ）が終わったら、サマリを報告したうえで**ユーザーの返答を待たずに PR を作成し、別エージェントによるコードレビューを開始する**。レビューは時間がかかるため、先に走らせてユーザーの確認と並行させる。
   - **減らすのは「グリーン後・PR 作成前」の停止だけ。** それより前のゲート（**着手ゲート** / **レッド確認** / **テスト承認**）は従来どおり全部残る。**実装完了以降**の承認ゲートが「マージ前」1 か所になる、という意味であって、TDD のゲートを省いてよいという意味ではない。
   - スタック固有の**人間ゲート**（KiCad のフットプリント照合、RP2040/RP2350 の**実機ゲート**など）も残る。これらは PR 作成時に手順を提示して**レビューと並行して依頼し、マージ前に必ず通す**。
+  - **人間に確認（人間ゲート・組み合わせテスト・実機確認）を依頼するときは、`agent_docs/common/human_verification.md` の形式で手順書を出す**: コピペで実行できる完全なコマンド・環境整備の細かい解説・期待出力・合否基準・つまずき対処まで書き、人間を判断と物理操作に集中させる（目視そのものは省かない）。**修正後の再確認でも毎回コマンドを出し直す**（「前回と同じ手順で」は禁止。修正の反映・再ビルドから合否確認まで全部）。
   - **次のいずれかに当てはまる場合だけは、PR を作る前に一度ユーザーに確認する**（前提がずれたままレビューを回すとレビュアーの時間が無駄になるため）:
     - ADR に記録すべき設計判断をした（計画ドキュメントからの逸脱）
     - `spec.md` の**層1**（システム全体 I/O・モジュール間インターフェース）を変更した
